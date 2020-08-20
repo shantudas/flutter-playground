@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_playground/User.dart';
+import 'package:flutter_playground/UserDetails.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,6 +11,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      routes: {
+        UserDetails.routeName: (context) => UserDetails(),
+      },
+
+      /*routes: <String, WidgetBuilder> {
+        '/user-details': (BuildContext context) => UserDetails(),
+      },*/
+
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -52,27 +61,34 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   final users = User.fetchAllUsers();
 
   @override
   Widget build(BuildContext context) {
+
+    print('rebuilding');
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
       body: ListView.builder(
         itemCount: users.length,
-        itemBuilder: (context, index) =>
-            _itemBuilder(context, users[index]),
+        itemBuilder: (context, index) => _itemBuilder(users[index]),
       ),
     );
   }
 
-  _itemBuilder(BuildContext context, User user) {
+  Widget  _itemBuilder(User user) {
     return ListTile(
       title: Text(user.fullName),
       subtitle: Text(user.company),
+      onTap: () => _onPressed(user),
     );
+  }
+
+  _onPressed(User user) {
+    //Navigator.pushNamed(context, '/user-details');
+    Navigator.pushNamed(context, UserDetails.routeName, arguments: user);
   }
 }
