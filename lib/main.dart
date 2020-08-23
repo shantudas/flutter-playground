@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+
+import 'Article.dart';
 
 void main() {
   runApp(MyApp());
@@ -50,6 +55,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  static const String TAG = "HomePage";
+
+  List<Article> articles = [];
+  String url = "http://tranquil-spire-95897.herokuapp.com/api/v1/articles";
+
+  @override
+  void initState() {
+    _fetchArticles(url);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -64,7 +80,59 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
+      body: ListView.builder(
+          itemCount: articles.length,
+          itemBuilder: (context, index) {
+            final article = articles[index];
+            return ListTile(
+              title: Text(article.title),
+              subtitle: Text('Posted by ${article.postedBy}'),
+            );
+          }),
       // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  //fetch articles from rest api
+  // @params url
+  _fetchArticles(String url) async {
+    final response = await get(url);
+
+    if (response.statusCode == 200) {
+      var jsonBody = json.decode(response.body);
+      List jsonData = jsonBody['data'];
+
+      for (var i in jsonData) {
+        Article article = Article.fromJson(i);
+        articles.add(article);
+      }
+
+      setState(() {
+
+      });
+      print('$TAG article size :: ${articles.length}');
+    } else {
+      throw Exception('Unable to fetch articles');
+    }
+  }
+
+  // fetch more articles from rest api
+  // this method is called when user scroll to bottom of the screen
+  // @params url
+  _fetchMoreArticles(String url) async {
+    print('$TAG _fetchMoreArticles called ::\n $url');
+    final response = await get(url);
+
+    if (response.statusCode == 200) {
+      var jsonBody = json.decode(response.body);
+      List jsonData = jsonBody['data'];
+
+      for (var i in jsonData) {
+        Article article = Article.fromJson(i);
+        articles.add(article);
+      }
+    } else {
+      throw Exception('Unable to fetch articles');
+    }
   }
 }
