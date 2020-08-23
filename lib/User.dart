@@ -32,15 +32,17 @@ class Address {
   final String street;
   final String suite;
   final String city;
+  final String zipCode;
   final Geo geo;
 
-  Address({this.street, this.suite, this.city, this.geo});
+  Address({this.street, this.suite, this.city, this.zipCode, this.geo});
 
   factory Address.fromJson(Map<String, dynamic> parsedJson) {
     return Address(
       street: parsedJson['street'],
       suite: parsedJson['suite'],
       city: parsedJson['city'],
+      zipCode: parsedJson['zipcode'],
       geo: Geo.fromJson(parsedJson['geo']),
     );
   }

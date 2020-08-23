@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_playground/User.dart';
+import 'package:flutter_playground/UserDetails.dart';
 import 'package:http/http.dart';
 
 void main() {
@@ -14,6 +15,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      routes: {
+        UserDetails.routeName: (context) => UserDetails(),
+      },
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -91,12 +95,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 // Provide a builder function. This is where the magic happens.
                 // Convert each item into a widget based on the type of item it is.
                 itemBuilder: (context, index) {
-                  final item = snapshot.data[index];
+                  final user = snapshot.data[index];
 
                   return ListTile(
-                    title: Text(item.name),
-                    subtitle: Text(item.company.name),
+                    title: Text(user.name),
+                    subtitle: Text(user.company.name),
                     trailing: Icon(Icons.keyboard_arrow_right),
+                    onTap: () => _onPressed(user),
                   );
                 },
               );
@@ -106,6 +111,10 @@ class _MyHomePageState extends State<MyHomePage> {
           },
         )) // This trailing comma makes auto-formatting nicer for build methods.
         );
+  }
+
+  _onPressed(User user) {
+    Navigator.pushNamed(context, UserDetails.routeName, arguments: user);
   }
 }
 
