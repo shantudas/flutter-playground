@@ -14,8 +14,13 @@ class UserDetails extends StatelessWidget {
       appBar: AppBar(title: Text("User details")),
       body: Center(
           child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(args.fullName)
+          Text("Name: " + args.fullName),
+          Text("User name: " + args.userName),
+          Text("Company:" + args.company),
+          Text("Address:" + args.address),
+          Text("Phone: "+args.phone),
         ],
       )),
     );
