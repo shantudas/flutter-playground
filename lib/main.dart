@@ -64,23 +64,32 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     _fetchArticles(_url);
-    super.initState();
 
-    _scrollController.addListener((){
+    _scrollController.addListener(() {
+      double viewportDimension = _scrollController.position.viewportDimension;
+      double minScroll = _scrollController.position.minScrollExtent;
       double maxScroll = _scrollController.position.maxScrollExtent;
       double currentScroll = _scrollController.position.pixels;
-      print('$TAG:: maxScroll- $maxScroll currentScroll- $currentScroll');
-      if (currentScroll == maxScroll) {
-        if(_url!=null){
+
+      print('$TAG:: viewportDimension- $viewportDimension minScroll- $minScroll maxScroll- $maxScroll currentScroll- $currentScroll');
+       if (currentScroll == maxScroll) {
+        if (_url != null) {
           print('$TAG inside listener called ::\n $_url');
           _fetchArticles(_url);
-        }else{
+        } else {
           print('$TAG no more data to fetch');
         }
       }
     });
+
+    super.initState();
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
           itemBuilder: (context, index) {
             final article = articles[index];
             return ListTile(
-              title: Text(article.title),
+              title: Text('${article.id}. ${article.title}'),
               subtitle: Text('Posted by ${article.postedBy}'),
             );
           }),
@@ -133,9 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
         articles.add(article);
       }
 
-      setState(() {
-
-      });
+      setState(() {});
       print('$TAG article size :: ${articles.length}');
     } else {
       throw Exception('Unable to fetch articles');
