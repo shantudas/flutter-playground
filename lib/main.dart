@@ -105,24 +105,59 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: ListView.builder(
-          controller: _scrollController,
-          itemCount: articles.length+1, // Add one more item for progress indicator
-          itemBuilder: (context, index) {
-            if(index== articles.length){
-              return _buildProgressIndicator();
-            }else{
-              final article = articles[index];
-              return Column(
-                children: <Widget>[
-                  ListTile(
-                    title: Text('${article.id}. ${article.title}'),
-                    subtitle: Text('Posted by ${article.postedBy}'),
-                  ), Divider()
-                ],
-              );
+      body: RefreshIndicator(
+        child: ListView.builder(
+            controller: _scrollController,
+            itemCount: articles.length+1, // Add one more item for progress indicator
+            itemBuilder: (context, index) {
+              if(index== articles.length){
+                return _buildProgressIndicator();
+              }else{
+                final article = articles[index];
+                return Column(
+                  children: <Widget>[
+                    ListTile(
+                      title: Text('${article.id}. ${article.title}'),
+                      subtitle: Text('Posted by ${article.postedBy}'),
+                    ), Divider()
+                  ],
+                );
+              }
+            }),
+        onRefresh: () async {
+
+          setState(() {
+            articles.clear();
+          });
+          print('$TAG _fetchArticles on refresh called ::\n http://tranquil-spire-95897.herokuapp.com/api/v1/articles');
+          final response = await get("http://tranquil-spire-95897.herokuapp.com/api/v1/articles");
+
+          if (response.statusCode == 200) {
+            var jsonBody = json.decode(response.body);
+            List jsonArray = jsonBody['data'];
+
+            var nextPageUrl = jsonBody['links']['next'];
+            print('$TAG next page url :: $nextPageUrl');
+            if (nextPageUrl != null) {
+              _url = nextPageUrl;
+            } else {
+              _url = null;
             }
-          }),
+
+            for (var i in jsonArray) {
+              Article article = Article.fromJson(i);
+              articles.add(article);
+            }
+
+            setState(() {
+
+            });
+            print('$TAG article size :: ${articles.length}');
+          } else {
+            throw Exception('Unable to fetch articles');
+          }
+        }
+      ),
       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
