@@ -56,7 +56,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   static const String TAG = "HomePage";
-
+  bool isLoading = false;
   List<Article> articles = [];
   String _url = "http://tranquil-spire-95897.herokuapp.com/api/v1/articles";
   ScrollController _scrollController = ScrollController();
@@ -107,17 +107,21 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: ListView.builder(
           controller: _scrollController,
-          itemCount: articles.length,
+          itemCount: articles.length+1, // Add one more item for progress indicator
           itemBuilder: (context, index) {
-            final article = articles[index];
-            return Column(
-              children: <Widget>[
-                ListTile(
-                  title: Text('${article.id}. ${article.title}'),
-                  subtitle: Text('Posted by ${article.postedBy}'),
-                ), Divider()
-              ],
-            );
+            if(index== articles.length){
+              return _buildProgressIndicator();
+            }else{
+              final article = articles[index];
+              return Column(
+                children: <Widget>[
+                  ListTile(
+                    title: Text('${article.id}. ${article.title}'),
+                    subtitle: Text('Posted by ${article.postedBy}'),
+                  ), Divider()
+                ],
+              );
+            }
           }),
       // This trailing comma makes auto-formatting nicer for build methods.
     );
@@ -126,30 +130,52 @@ class _MyHomePageState extends State<MyHomePage> {
   //fetch articles from rest api
   // @params url
   _fetchArticles(String urlToCall) async {
-    print('$TAG _fetchArticles called ::\n $urlToCall');
-    final response = await get(urlToCall);
+    if (!isLoading) {
+      setState(() {
+        isLoading = true;
+      });
 
-    if (response.statusCode == 200) {
-      var jsonBody = json.decode(response.body);
-      List jsonArray = jsonBody['data'];
+      print('$TAG _fetchArticles called ::\n $urlToCall');
+      final response = await get(urlToCall);
 
-      var nextPageUrl = jsonBody['links']['next'];
-      print('$TAG next page url :: $nextPageUrl');
-      if (nextPageUrl != null) {
-        _url = nextPageUrl;
+      if (response.statusCode == 200) {
+        var jsonBody = json.decode(response.body);
+        List jsonArray = jsonBody['data'];
+
+        var nextPageUrl = jsonBody['links']['next'];
+        print('$TAG next page url :: $nextPageUrl');
+        if (nextPageUrl != null) {
+          _url = nextPageUrl;
+        } else {
+          _url = null;
+        }
+
+        for (var i in jsonArray) {
+          Article article = Article.fromJson(i);
+          articles.add(article);
+        }
+
+        isLoading = false;
+
+        setState(() {
+
+        });
+        print('$TAG article size :: ${articles.length}');
       } else {
-        _url = null;
+        throw Exception('Unable to fetch articles');
       }
-
-      for (var i in jsonArray) {
-        Article article = Article.fromJson(i);
-        articles.add(article);
-      }
-
-      setState(() {});
-      print('$TAG article size :: ${articles.length}');
-    } else {
-      throw Exception('Unable to fetch articles');
     }
+  }
+
+  Widget _buildProgressIndicator() {
+    return new Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: new Center(
+        child: new Opacity(
+          opacity: isLoading ? 1.0 : 00,
+          child: new CircularProgressIndicator(),
+        ),
+      ),
+    );
   }
 }
