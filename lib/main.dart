@@ -110,9 +110,13 @@ class _MyHomePageState extends State<MyHomePage> {
           itemCount: articles.length,
           itemBuilder: (context, index) {
             final article = articles[index];
-            return ListTile(
-              title: Text('${article.id}. ${article.title}'),
-              subtitle: Text('Posted by ${article.postedBy}'),
+            return Column(
+              children: <Widget>[
+                ListTile(
+                  title: Text('${article.id}. ${article.title}'),
+                  subtitle: Text('Posted by ${article.postedBy}'),
+                ), Divider()
+              ],
             );
           }),
       // This trailing comma makes auto-formatting nicer for build methods.
