@@ -58,13 +58,29 @@ class _MyHomePageState extends State<MyHomePage> {
   static const String TAG = "HomePage";
 
   List<Article> articles = [];
-  String url = "http://tranquil-spire-95897.herokuapp.com/api/v1/articles";
+  String _url = "http://tranquil-spire-95897.herokuapp.com/api/v1/articles";
+  ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
-    _fetchArticles(url);
+    _fetchArticles(_url);
     super.initState();
+
+    _scrollController.addListener((){
+      double maxScroll = _scrollController.position.maxScrollExtent;
+      double currentScroll = _scrollController.position.pixels;
+      print('$TAG:: maxScroll- $maxScroll currentScroll- $currentScroll');
+      if (currentScroll == maxScroll) {
+        if(_url!=null){
+          print('$TAG inside listener called ::\n $_url');
+          _fetchArticles(_url);
+        }else{
+          print('$TAG no more data to fetch');
+        }
+      }
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: ListView.builder(
+          controller: _scrollController,
           itemCount: articles.length,
           itemBuilder: (context, index) {
             final article = articles[index];
@@ -95,14 +112,23 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //fetch articles from rest api
   // @params url
-  _fetchArticles(String url) async {
-    final response = await get(url);
+  _fetchArticles(String urlToCall) async {
+    print('$TAG _fetchArticles called ::\n $urlToCall');
+    final response = await get(urlToCall);
 
     if (response.statusCode == 200) {
       var jsonBody = json.decode(response.body);
-      List jsonData = jsonBody['data'];
+      List jsonArray = jsonBody['data'];
 
-      for (var i in jsonData) {
+      var nextPageUrl = jsonBody['links']['next'];
+      print('$TAG next page url :: $nextPageUrl');
+      if (nextPageUrl != null) {
+        _url = nextPageUrl;
+      } else {
+        _url = null;
+      }
+
+      for (var i in jsonArray) {
         Article article = Article.fromJson(i);
         articles.add(article);
       }
@@ -111,26 +137,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
       });
       print('$TAG article size :: ${articles.length}');
-    } else {
-      throw Exception('Unable to fetch articles');
-    }
-  }
-
-  // fetch more articles from rest api
-  // this method is called when user scroll to bottom of the screen
-  // @params url
-  _fetchMoreArticles(String url) async {
-    print('$TAG _fetchMoreArticles called ::\n $url');
-    final response = await get(url);
-
-    if (response.statusCode == 200) {
-      var jsonBody = json.decode(response.body);
-      List jsonData = jsonBody['data'];
-
-      for (var i in jsonData) {
-        Article article = Article.fromJson(i);
-        articles.add(article);
-      }
     } else {
       throw Exception('Unable to fetch articles');
     }
