@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp());
@@ -50,6 +51,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  static const String TAG = "HomePage";
+  static const String _stringValueName = "stringValueName";
+  static const String _intValueName = "integerValueName";
+  String _userName = "";
+  int _userAge = 0;
+
+  @override
+  void initState() {
+    _addValuesToSF();
+    _getValuesOfSF();
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -59,12 +74,34 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      // This trailing comma makes auto-formatting nicer for build methods.
-    );
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text(widget.title),
+        ),
+        body: ListView(
+          children: <Widget>[
+            ListTile(
+              title: Text(_userName),
+              subtitle: Text('age- $_userAge'),
+            )
+          ],
+        )
+        // This trailing comma makes auto-formatting nicer for build methods.
+        );
+  }
+
+  _addValuesToSF() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString(_stringValueName, "Shantu Chandra Das");
+    prefs.setInt(_intValueName, 27);
+  }
+
+  _getValuesOfSF() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _userName = prefs.getString(_stringValueName);
+    _userAge = prefs.getInt(_intValueName);
+    print('$TAG user details name :: $_userName age $_userAge');
+    setState(() {});
   }
 }
